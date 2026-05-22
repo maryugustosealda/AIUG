@@ -31,6 +31,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link className="block rounded-md px-3 py-2 hover:bg-[rgb(var(--hover))]" href="/admin/posts">所有内容</Link>
           <Link className="block rounded-md px-3 py-2 hover:bg-[rgb(var(--hover))]" href="/admin/users">用户</Link>
           <Link className="block rounded-md px-3 py-2 hover:bg-[rgb(var(--hover))]" href="/admin/circles">圈子</Link>
+          <Link className="block rounded-md px-3 py-2 hover:bg-[rgb(var(--hover))]" href="/admin/seed">一键初始化</Link>
         </nav>
       </aside>
       <div>{children}</div>
