@@ -23,8 +23,8 @@ const CIRCLES = [
 ];
 
 const ROOM = {
-  name: "AIUG 茶水间",
-  description: "新人欢迎、灌水、随便聊。第一个官方群组,所有人都可加入。",
+  name: "AIUG",
+  description: "AIUG 官方公开群组,新人欢迎、随便聊。",
   icon: "chat",
   color: "indigo",
 };
@@ -60,10 +60,11 @@ export async function POST() {
     created.push(c.slug);
   }
 
-  // 默认群组(只建第一个)
-  const anyRoom = await prisma.chatRoom.findFirst();
+  // 默认群组:不存在则创建,存在则把名字 / 简介 / icon 同步为最新预设(只更新由本接口先前创建出来的茶水间或同名群组,避免覆盖管理员手动改的)
+  const anyRoom = await prisma.chatRoom.findFirst({ orderBy: { createdAt: "asc" } });
   let roomCreated = false;
-  let roomId: string | null = anyRoom?.id || null;
+  let roomRenamed = false;
+  let roomId: string | null = null;
   if (!anyRoom) {
     const room = await prisma.chatRoom.create({
       data: {
@@ -78,12 +79,26 @@ export async function POST() {
     });
     roomId = room.id;
     roomCreated = true;
+  } else {
+    roomId = anyRoom.id;
+    // 只重命名旧的预设群组,不动管理员手动建的
+    if (anyRoom.name === "AIUG 茶水间" || anyRoom.name === "茶水间") {
+      await prisma.chatRoom.update({
+        where: { id: anyRoom.id },
+        data: {
+          name: ROOM.name,
+          description: ROOM.description,
+          icon: makeBadge(ROOM.icon as any, ROOM.color as any),
+        },
+      });
+      roomRenamed = true;
+    }
   }
 
   return NextResponse.json({
     ok: true,
     circles: { created, skipped },
-    room: { created: roomCreated, id: roomId, name: ROOM.name },
+    room: { created: roomCreated, renamed: roomRenamed, id: roomId, name: ROOM.name },
   });
 }
 

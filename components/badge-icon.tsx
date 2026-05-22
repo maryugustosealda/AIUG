@@ -37,16 +37,18 @@ export default function BadgeIcon({
   return (
     <span
       className={cn(
-        "relative inline-flex items-center justify-center bg-gradient-to-br shadow-sm",
+        "relative inline-flex items-center justify-center bg-gradient-to-br shadow-md",
         color.from,
         color.to,
         s.box,
         s.rounded,
-        "ring-1 ring-inset ring-white/20",
+        // 内圈高光 + 外圈轻微描边,确保在浅色和深色主题下都有清晰边界
+        "ring-1 ring-inset ring-white/30",
+        "outline outline-1 outline-black/5 dark:outline-white/5",
         className
       )}
     >
-      <Icon size={s.icon} className="text-white drop-shadow-sm" strokeWidth={2.4} />
+      <Icon size={s.icon} className="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]" strokeWidth={2.5} />
     </span>
   );
 }

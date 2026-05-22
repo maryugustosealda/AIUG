@@ -35,9 +35,9 @@ export default function SeedPage() {
         <h1 className="text-2xl font-bold">一键导入基础数据</h1>
         <p className="mt-1 text-sm text-foreground/60">
           创建 8 个预设圈子(AI 绘画 / AI 写作 / AI 编程 / 智能体 / 音视频 / 模型工具 / 学习交流 / 作品展示),
-          以及 1 个公共群组「AIUG 茶水间」。
+          以及 1 个公共群组「AIUG」。
           <br />
-          重复点击是安全的:已存在的不会被覆盖。
+          重复点击是安全的:已存在的不会被覆盖。如果之前有过测试群组「AIUG 茶水间」,会自动重命名为「AIUG」。
         </p>
       </div>
 
@@ -74,7 +74,12 @@ export default function SeedPage() {
             )}
           </div>
           <div>
-            群组:{result.room.created ? "新建" : "已存在"} 「{result.room.name}」
+            群组:
+            {result.room.created
+              ? `新建「${result.room.name}」`
+              : result.room.renamed
+              ? `已存在,已重命名为「${result.room.name}」`
+              : `已存在「${result.room.name}」(管理员手动建的群组不会被改动)`}
           </div>
           <div className="pt-2 text-xs text-foreground/60">
             前往 <a className="underline" href="/circles">圈子列表</a> 或{" "}

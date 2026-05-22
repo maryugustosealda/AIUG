@@ -66,22 +66,23 @@ export const ICONS: Record<IconKey, { label: string; Icon: LucideIcon }> = {
 
 /**
  * 色调:渐变背景 + 高对比文字
- * gradient: tailwind from/to,bg/border 给非渐变退化场景
+ * - from/to 选 400 → 600,饱和度足够,在浅色背景下对比也明显
+ * - ring 给 inset 的边,soft 是非渐变退化(暂未使用,留作扩展)
  */
 export const COLORS: Record<
   ColorKey,
   { label: string; from: string; to: string; ring: string; soft: string }
 > = {
-  indigo:   { label: "靛蓝", from: "from-indigo-500",   to: "to-indigo-700",   ring: "ring-indigo-500/30",   soft: "bg-indigo-500/10" },
-  violet:   { label: "紫罗兰", from: "from-violet-500", to: "to-violet-700",   ring: "ring-violet-500/30",   soft: "bg-violet-500/10" },
-  fuchsia:  { label: "品红", from: "from-fuchsia-500",  to: "to-fuchsia-700",  ring: "ring-fuchsia-500/30",  soft: "bg-fuchsia-500/10" },
-  rose:     { label: "玫红", from: "from-rose-500",     to: "to-rose-700",     ring: "ring-rose-500/30",     soft: "bg-rose-500/10" },
-  amber:    { label: "琥珀", from: "from-amber-500",    to: "to-amber-700",    ring: "ring-amber-500/30",    soft: "bg-amber-500/10" },
-  emerald:  { label: "翡翠", from: "from-emerald-500",  to: "to-emerald-700",  ring: "ring-emerald-500/30",  soft: "bg-emerald-500/10" },
-  cyan:     { label: "青蓝", from: "from-cyan-500",     to: "to-cyan-700",     ring: "ring-cyan-500/30",     soft: "bg-cyan-500/10" },
-  sky:      { label: "天蓝", from: "from-sky-500",      to: "to-sky-700",      ring: "ring-sky-500/30",      soft: "bg-sky-500/10" },
-  slate:    { label: "石板", from: "from-slate-500",    to: "to-slate-700",    ring: "ring-slate-500/30",    soft: "bg-slate-500/10" },
-  orange:   { label: "橙橘", from: "from-orange-500",   to: "to-orange-700",   ring: "ring-orange-500/30",   soft: "bg-orange-500/10" },
+  indigo:   { label: "靛蓝", from: "from-indigo-400",   to: "to-indigo-600",   ring: "ring-indigo-500/30",   soft: "bg-indigo-500/10" },
+  violet:   { label: "紫罗兰", from: "from-violet-400", to: "to-violet-600",   ring: "ring-violet-500/30",   soft: "bg-violet-500/10" },
+  fuchsia:  { label: "品红", from: "from-fuchsia-400",  to: "to-fuchsia-600",  ring: "ring-fuchsia-500/30",  soft: "bg-fuchsia-500/10" },
+  rose:     { label: "玫红", from: "from-rose-400",     to: "to-rose-600",     ring: "ring-rose-500/30",     soft: "bg-rose-500/10" },
+  amber:    { label: "琥珀", from: "from-amber-400",    to: "to-amber-600",    ring: "ring-amber-500/30",    soft: "bg-amber-500/10" },
+  emerald:  { label: "翡翠", from: "from-emerald-400",  to: "to-emerald-600",  ring: "ring-emerald-500/30",  soft: "bg-emerald-500/10" },
+  cyan:     { label: "青蓝", from: "from-cyan-400",     to: "to-cyan-600",     ring: "ring-cyan-500/30",     soft: "bg-cyan-500/10" },
+  sky:      { label: "天蓝", from: "from-sky-400",      to: "to-sky-600",      ring: "ring-sky-500/30",      soft: "bg-sky-500/10" },
+  slate:    { label: "石板", from: "from-slate-400",    to: "to-slate-600",    ring: "ring-slate-500/30",    soft: "bg-slate-500/10" },
+  orange:   { label: "橙橘", from: "from-orange-400",   to: "to-orange-600",   ring: "ring-orange-500/30",   soft: "bg-orange-500/10" },
 };
 
 export const ICON_KEYS = Object.keys(ICONS) as IconKey[];
