@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { auth, requireUser } from "@/lib/auth";
+import { auth, requireAdmin } from "@/lib/auth";
 
 // 列出公开群组 + 我加入的
 export async function GET() {
@@ -36,7 +36,15 @@ const Schema = z.object({
 });
 
 export async function POST(req: Request) {
-  let user; try { user = await requireUser(); } catch { return NextResponse.json({ error: "请先登录" }, { status: 401 }); }
+  let user;
+  try {
+    user = await requireAdmin();
+  } catch (e: any) {
+    if (e?.message === "UNAUTHENTICATED") {
+      return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    }
+    return NextResponse.json({ error: "仅管理员可创建群组" }, { status: 403 });
+  }
   try {
     const data = Schema.parse(await req.json());
     const room = await prisma.$transaction(async (tx) => {

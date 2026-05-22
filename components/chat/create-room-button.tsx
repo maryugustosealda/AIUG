@@ -15,7 +15,8 @@ export default function CreateRoomButton() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
-  if (!session) return null;
+  // 仅管理员可创建群组
+  if (!session || (session.user as any)?.role !== "admin") return null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
