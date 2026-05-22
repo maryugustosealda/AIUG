@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getFeed } from "@/lib/feed";
 import PostCard from "@/components/post/post-card";
 import BannerHero from "@/components/banner-hero";
+import BadgeIcon from "@/components/badge-icon";
 import { TrendingUp, Clock, Hash } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -72,9 +73,10 @@ export default async function HomePage({
           <ul className="space-y-2 text-sm">
             {hotCircles.map((c) => (
               <li key={c.id}>
-                <Link href={`/circles/${c.slug}`} className="flex items-center justify-between hover:text-brand-600">
-                  <span>{c.name}</span>
-                  <span className="text-xs text-[rgb(var(--muted))]">{c.postCount} 帖</span>
+                <Link href={`/circles/${c.slug}`} className="flex items-center gap-2 hover:text-brand-600">
+                  <BadgeIcon raw={c.icon} seed={c.slug} size="xs" />
+                  <span className="flex-1 truncate">{c.name}</span>
+                  <span className="text-xs text-[rgb(var(--muted))]">{c.postCount}</span>
                 </Link>
               </li>
             ))}

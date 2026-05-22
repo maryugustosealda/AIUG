@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getFeed } from "@/lib/feed";
 import PostCard from "@/components/post/post-card";
+import BadgeIcon from "@/components/badge-icon";
+import { COLORS, parseBadge } from "@/lib/badge";
 
 export const dynamic = "force-dynamic";
 
@@ -9,14 +11,16 @@ export default async function CirclePage({ params }: { params: { slug: string } 
   const circle = await prisma.circle.findUnique({ where: { slug: params.slug } });
   if (!circle) return notFound();
   const posts = await getFeed({ circleId: circle.id, take: 30 });
+  const { colorKey } = parseBadge(circle.icon, circle.slug);
+  const tone = COLORS[colorKey];
   return (
     <div className="space-y-5">
       <div className="card overflow-hidden">
-        <div className="h-32 bg-gradient-to-br from-brand-400 to-brand-800" />
+        <div className={`h-32 bg-gradient-to-br ${tone.from} ${tone.to}`} />
         <div className="p-5">
           <div className="flex items-end gap-3">
-            <div className="-mt-12 grid h-16 w-16 place-items-center rounded-2xl bg-[rgb(var(--card))] text-3xl shadow">
-              {circle.icon || circle.name.slice(0, 1)}
+            <div className="-mt-12">
+              <BadgeIcon raw={circle.icon} seed={circle.slug} size="xl" className="ring-4 ring-[rgb(var(--card))] shadow" />
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-bold">{circle.name}</h1>

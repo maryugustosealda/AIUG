@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ChatRoom from "@/components/chat/chat-room";
+import BadgeIcon from "@/components/badge-icon";
 import { ArrowLeft, Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +44,7 @@ export default async function ChatRoomPage({ params }: { params: { id: string } 
       <div className="card flex flex-col overflow-hidden">
         <div className="flex items-center gap-3 border-b border-[rgb(var(--border))] p-3">
           <Link href="/chat" className="btn-ghost px-2 md:hidden"><ArrowLeft className="h-4 w-4" /></Link>
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-700 text-white">{room.icon || room.name.slice(0,1)}</span>
+          <BadgeIcon raw={room.icon} seed={room.id} size="sm" />
           <div className="flex-1 min-w-0">
             <div className="font-semibold truncate">{room.name}</div>
             <div className="text-xs text-[rgb(var(--muted))]">{room.memberCount} 人 · 由 {room.creator.nickname} 创建</div>

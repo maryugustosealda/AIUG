@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import CreateRoomButton from "@/components/chat/create-room-button";
+import BadgeIcon from "@/components/badge-icon";
 import { fromNow } from "@/lib/utils";
 import { Users, Hash } from "lucide-react";
 
@@ -40,7 +41,7 @@ export default async function ChatHome() {
               {joined.map((m) => (
                 <li key={m.id}>
                   <Link href={`/chat/${m.room.id}`} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[rgb(var(--hover))]">
-                    <span className="grid h-7 w-7 place-items-center rounded-md bg-brand-100 text-brand-700">{m.room.icon || "#"}</span>
+                    <BadgeIcon raw={m.room.icon} seed={m.room.id} size="xs" />
                     <span className="flex-1 truncate">{m.room.name}</span>
                   </Link>
                 </li>
@@ -56,7 +57,7 @@ export default async function ChatHome() {
           {publicRooms.map((r) => (
             <Link key={r.id} href={`/chat/${r.id}`} className="card p-4 hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
               <div className="flex items-start gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 text-white text-xl">{r.icon || r.name.slice(0,1)}</span>
+                <BadgeIcon raw={r.icon} seed={r.id} size="md" />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold truncate">{r.name}</div>
                   <p className="line-clamp-2 mt-0.5 text-sm text-[rgb(var(--muted))]">{r.description || "—"}</p>
