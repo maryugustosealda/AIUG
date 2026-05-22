@@ -10,3 +10,6 @@ prisma/dev.db-journal
 .vscode
 public/uploads
 
+
+.vercel
+.env*
