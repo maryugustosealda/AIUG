@@ -77,7 +77,7 @@ function formatPost(p: any) {
     app: p.app
       ? {
           id: p.app.id,
-          name: p.title || "",
+          name: p.app.name,
           logo: p.app.logo || null,
           screenshots: parseJsonArray(p.app.screenshots),
         }
