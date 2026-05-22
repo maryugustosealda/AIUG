@@ -3,12 +3,33 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import CreateRoomButton from "@/components/chat/create-room-button";
 import BadgeIcon from "@/components/badge-icon";
+import { makeBadge } from "@/lib/badge";
 import { fromNow } from "@/lib/utils";
 import { Users, Hash } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * 自愈式迁移:旧的「茶水间」群组统一更名为 AIUG。
+ * 命中条件 0 时 update 也不会失败,且对未来访问无任何性能影响。
+ */
+async function autoMigrateLegacyNames() {
+  try {
+    await prisma.chatRoom.updateMany({
+      where: { name: { contains: "茶水间" } },
+      data: {
+        name: "AIUG",
+        description: "AIUG 官方公开群组,新人欢迎、随便聊。",
+        icon: makeBadge("chat", "indigo"),
+      },
+    });
+  } catch {
+    // 静默:迁移失败不影响页面渲染
+  }
+}
+
 export default async function ChatHome() {
+  await autoMigrateLegacyNames();
   const session = await auth();
   const userId = session?.user?.id;
   const [publicRooms, joined] = await Promise.all([
