@@ -1,0 +1,320 @@
+// AIUG 数据模型
+// 设计原则:Post 是核心,App 是 Post 的一种特殊类型(通过 type 字段区分)
+// 这样应用、教程、心得、求助 共用 feed、评论、点赞、收藏
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户 ====================
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String
+  nickname      String
+  avatar        String?
+  bio           String?   // 个人简介
+  role          String    @default("user") // user / admin
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  favorites     Favorite[]
+  follows       Follow[]  @relation("Follower")
+  followedBy    Follow[]  @relation("Following")
+  notifications Notification[] @relation("NotifReceiver")
+  sentNotifs    Notification[] @relation("NotifSender")
+  unlocks       Unlock[]
+  reports       Report[]
+  circleMembers CircleMember[]
+  chatRooms     ChatMember[]
+  chatMessages  ChatMessage[]
+  chatRoomsCreated ChatRoom[] @relation("ChatRoomCreator")
+}
+
+// ==================== 聊天群组 ====================
+model ChatRoom {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  icon        String?
+  visibility  String   @default("public") // public / private
+  creatorId   String
+  memberCount Int      @default(0)
+  lastMsgAt   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  creator  User          @relation("ChatRoomCreator", fields: [creatorId], references: [id])
+  members  ChatMember[]
+  messages ChatMessage[]
+
+  @@index([visibility, lastMsgAt])
+}
+
+model ChatMember {
+  id         String   @id @default(cuid())
+  roomId     String
+  userId     String
+  role       String   @default("member") // member / admin / owner
+  lastReadAt DateTime @default(now())
+  joinedAt   DateTime @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  authorId  String
+  type      String   @default("text") // text / image / system
+  content   String
+  createdAt DateTime @default(now())
+
+  room   ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  author User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+}
+
+// ==================== 圈子(社区) ====================
+model Circle {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  icon        String?
+  cover       String?
+  postCount   Int      @default(0)
+  memberCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  posts   Post[]
+  members CircleMember[]
+}
+
+model CircleMember {
+  id       String   @id @default(cuid())
+  userId   String
+  circleId String
+  role     String   @default("member") // member / mod
+  joinedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  circle Circle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, circleId])
+}
+
+// ==================== 分类(给应用用,圈子是兴趣社区,分类是商品类目) ====================
+model Category {
+  id    String  @id @default(cuid())
+  slug  String  @unique
+  name  String
+  icon  String?
+  sort  Int     @default(0)
+
+  apps  App[]
+}
+
+// ==================== 帖子(核心) ====================
+// type: text(图文) / app(应用发布) / question(求助) / service(技能服务)
+model Post {
+  id        String   @id @default(cuid())
+  authorId  String
+  circleId  String?
+  type      String   @default("text") // text / app / question / service
+  title     String
+  content   String   // markdown
+  cover     String?  // 封面图
+  images    String?  // JSON 数组,多图
+  tags      String?  // JSON 数组
+  status    String   @default("published") // published / pending / rejected / removed
+  pinned    Boolean  @default(false)
+  hot       Float    @default(0) // 热度分,后续算法用
+  viewCount Int      @default(0)
+  likeCount Int      @default(0)
+  commentCount Int   @default(0)
+  favoriteCount Int  @default(0)
+  rejectReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  circle    Circle?   @relation(fields: [circleId], references: [id])
+  app       App?
+  service   Service?
+  comments  Comment[]
+  likes     Like[]
+  favorites Favorite[]
+  reports   Report[]
+
+  @@index([type, status, createdAt])
+  @@index([circleId, status])
+  @@index([authorId])
+}
+
+// ==================== 应用(扩展 Post) ====================
+model App {
+  id              String   @id @default(cuid())
+  postId          String   @unique
+  name            String
+  logo            String?
+  summary         String   // 一句话简介
+  screenshots     String?  // JSON 数组,应用截图(最多 6 张)
+  categoryId      String
+  platforms       String   // JSON: ["windows","macos","android",...]
+  version         String   @default("1.0.0")
+  size            String?  // "120MB"
+  requirements    String?
+  pricingMode     String   @default("free") // free / trial / paid
+  price           Float    @default(0)
+  billingCycle    String?  // 计费方式: oneTime / monthly / yearly / lifetime
+  trialDesc       String?  // 试用范围 / 试用限制
+  paymentChannels String?  // JSON: ["wechat","alipay","afdian","xianyu","contact"]
+  pricingDetail   String?  // 付费/试用详情说明,Markdown,创作者自由填
+  downloadUrl     String   // 夸克链接(审核通过后锁定)
+  downloadPwd     String?  // 提取码
+  linkLocked      Boolean  @default(false)
+  downloadCount   Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+  unlocks  Unlock[]
+
+  @@index([categoryId])
+  @@index([pricingMode])
+}
+
+// ==================== 技能服务(扩展 Post,type=service)====================
+// 用户提供的"服务/教学/咨询"等,有套餐有交付
+model Service {
+  id              String   @id @default(cuid())
+  postId          String   @unique
+  category        String   // teaching/consulting/customize/outsource/training
+  summary         String   // 一句话简介
+  workSamples     String?  // JSON 数组,作品集图片
+  packages        String   // JSON 数组,套餐: [{name, price, deliveryDays, deliverables, description}]
+  paymentChannels String?  // JSON: ["wechat","alipay","afdian"...]
+  contactInfo     String?  // 联系方式说明,Markdown,登录后可见
+  status          String   @default("open") // open / busy / closed
+  orderCount      Int      @default(0) // 仅作展示,后期接订单
+  createdAt       DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([category, status])
+}
+
+// ==================== 互动 ====================
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  parentId  String?  // 一级评论时为空,回复评论时指向被回复的评论
+  likeCount Int      @default(0)
+  createdAt DateTime @default(now())
+
+  post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent Comment? @relation("Replies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies Comment[] @relation("Replies")
+
+  @@index([postId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   // 关注者
+  followingId String   // 被关注者
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower",  fields: [followerId],  references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+// ==================== 通知 / 解锁 / 举报 ====================
+model Notification {
+  id         String   @id @default(cuid())
+  receiverId String
+  senderId   String?
+  type       String   // like / comment / follow / mention / system / app_review
+  targetType String?  // post / comment / app
+  targetId   String?
+  content    String?
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  receiver User  @relation("NotifReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender   User? @relation("NotifSender",   fields: [senderId],   references: [id])
+
+  @@index([receiverId, read])
+}
+
+model Unlock {
+  id         String   @id @default(cuid())
+  userId     String
+  appId      String
+  mode       String   // free / trial / paid
+  amount     Float    @default(0)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  app  App  @relation(fields: [appId],  references: [id], onDelete: Cascade)
+
+  @@unique([userId, appId])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  postId     String?
+  reason     String
+  detail     String?
+  status     String   @default("open") // open / resolved / dismissed
+  createdAt  DateTime @default(now())
+
+  reporter User  @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  post     Post? @relation(fields: [postId], references: [id], onDelete: SetNull)
+}
+
