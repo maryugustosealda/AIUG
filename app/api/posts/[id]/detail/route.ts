@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +9,13 @@ export const dynamic = "force-dynamic";
  * 返回精简、稳定的字段集,与 /api/posts/list 形状一致 + 完整内容。
  */
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const session = await auth();
-  const userId = session?.user?.id || null;
+  let userId: string | null = null;
+  try {
+    const u = await requireUser();
+    userId = u.id;
+  } catch {
+    userId = null;
+  }
 
   const p = await prisma.post.findUnique({
     where: { id: params.id },

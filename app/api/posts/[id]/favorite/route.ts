@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
 /**
- * 切换点赞状态(网页和移动端共用)
- * 已点赞 -> 取消;未点赞 -> 点赞
+ * 切换收藏状态
  */
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
   let user;
@@ -15,53 +14,42 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   }
   const post = await prisma.post.findUnique({
     where: { id: params.id },
-    select: { id: true, authorId: true, likeCount: true },
+    select: { id: true, favoriteCount: true },
   });
   if (!post) return NextResponse.json({ error: "不存在" }, { status: 404 });
 
-  const existing = await prisma.like.findUnique({
+  const existing = await prisma.favorite.findUnique({
     where: { userId_postId: { userId: user.id, postId: post.id } },
   });
 
   if (existing) {
     await prisma.$transaction([
-      prisma.like.delete({ where: { userId_postId: { userId: user.id, postId: post.id } } }),
+      prisma.favorite.delete({
+        where: { userId_postId: { userId: user.id, postId: post.id } },
+      }),
       prisma.post.update({
         where: { id: post.id },
-        data: { likeCount: { decrement: 1 } },
+        data: { favoriteCount: { decrement: 1 } },
       }),
     ]);
     return NextResponse.json({
       ok: true,
-      liked: false,
-      likeCount: Math.max(0, post.likeCount - 1),
+      favorited: false,
+      favoriteCount: Math.max(0, post.favoriteCount - 1),
     });
   }
 
   await prisma.$transaction([
-    prisma.like.create({ data: { userId: user.id, postId: post.id } }),
+    prisma.favorite.create({ data: { userId: user.id, postId: post.id } }),
     prisma.post.update({
       where: { id: post.id },
-      data: { likeCount: { increment: 1 }, hot: { increment: 1 } },
+      data: { favoriteCount: { increment: 1 } },
     }),
   ]);
-  if (post.authorId !== user.id) {
-    await prisma.notification
-      .create({
-        data: {
-          receiverId: post.authorId,
-          senderId: user.id,
-          type: "like",
-          targetType: "post",
-          targetId: post.id,
-        },
-      })
-      .catch(() => {});
-  }
   return NextResponse.json({
     ok: true,
-    liked: true,
-    likeCount: post.likeCount + 1,
+    favorited: true,
+    favoriteCount: post.favoriteCount + 1,
   });
 }
 
@@ -72,13 +60,15 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   } catch {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
-  const r = await prisma.like.deleteMany({ where: { userId: user.id, postId: params.id } });
+  const r = await prisma.favorite.deleteMany({
+    where: { userId: user.id, postId: params.id },
+  });
   if (r.count) {
     await prisma.post.update({
       where: { id: params.id },
-      data: { likeCount: { decrement: 1 } },
+      data: { favoriteCount: { decrement: 1 } },
     });
   }
-  return NextResponse.json({ ok: true, liked: false });
+  return NextResponse.json({ ok: true, favorited: false });
 }
 
