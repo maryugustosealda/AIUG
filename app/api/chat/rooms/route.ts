@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { auth, requireAdmin } from "@/lib/auth";
+import { requireAdmin, requireUser } from "@/lib/auth";
 
-// 列出公开群组 + 我加入的
+// 列出公开群组 + 我加入的(支持 Bearer / cookie)
 export async function GET() {
-  const session = await auth();
-  const userId = session?.user?.id;
+  let userId: string | undefined;
+  try {
+    const u = await requireUser();
+    userId = u.id;
+  } catch {
+    userId = undefined;
+  }
   const [publicRooms, joined] = await Promise.all([
     prisma.chatRoom.findMany({
       where: { visibility: "public" },

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { nanoid } from "nanoid";
-import { auth } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -10,8 +10,11 @@ const ALLOWED = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/sv
 const MAX_BYTES = 4 * 1024 * 1024; // 4MB
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  try {
+    await requireUser();
+  } catch {
+    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
 
   const fd = await req.formData();
   const file = fd.get("file") as File | null;

@@ -29,12 +29,13 @@ const ServiceSchema = z.object({
 });
 
 const TextSchema = z.object({
-  type: z.enum(["text", "question"]),
+  type: z.enum(["text", "question", "image"]),
   title: z.string().min(2).max(120),
   content: z.string().min(1).max(20000),
   cover: z.string().optional().nullable(),
   circleId: z.string().optional().nullable(),
   tags: z.array(z.string()).max(8).optional(),
+  images: z.array(z.string()).max(9).optional(),
 });
 
 const AppSchema = z.object({
@@ -145,13 +146,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ post });
     } else {
       const data = TextSchema.parse(json);
+      const isImage = data.type === "image";
+      const cover = data.cover || (isImage && data.images?.length ? data.images[0] : null);
       const post = await prisma.post.create({
         data: {
           authorId: user.id,
           type: data.type,
           title: data.title,
           content: data.content,
-          cover: data.cover ?? null,
+          cover,
+          images: data.images && data.images.length ? JSON.stringify(data.images) : null,
           circleId: data.circleId || null,
           tags: data.tags ? JSON.stringify(data.tags) : null,
           status: "published",
