@@ -22,18 +22,22 @@ export default async function CirclesPage({
   return (
     <div className="space-y-6">
       {/* 顶部：社区介绍 + 发帖入口 */}
-      <div className="card p-6">
+      <div className="card-tech p-6">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Users className="h-6 w-6 text-brand-600" />
-              <h1 className="text-2xl font-bold">社区</h1>
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20">
+                <Users className="h-5 w-5 text-[rgb(var(--accent))]" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">社区</h1>
+                <p className="text-xs text-[rgb(var(--muted))]">
+                  发帖交流、分享经验、提问求助
+                </p>
+              </div>
             </div>
-            <p className="mt-1 text-sm text-[rgb(var(--muted))]">
-              发帖交流、分享经验、提问求助，和 AI 创作者一起讨论
-            </p>
           </div>
-          <Link href="/post/new?type=text" className="btn-primary shrink-0">
+          <Link href="/post/new?type=text" className="btn-primary">
             <PenSquare className="h-4 w-4" /> 发帖
           </Link>
         </div>

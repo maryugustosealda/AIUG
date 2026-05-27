@@ -22,11 +22,11 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[rgb(var(--border))] bg-[rgb(var(--bg))]/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-[rgb(var(--border))]/60 bg-[rgb(var(--bg))]/70 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
         <Link href="/" className="flex shrink-0 items-center gap-2 font-bold text-base">
           <Logo size={28} />
-          <span className="bg-gradient-to-br from-brand-500 to-brand-800 bg-clip-text text-transparent">
+          <span className="text-gradient font-extrabold tracking-tight">
             AIUG
           </span>
         </Link>

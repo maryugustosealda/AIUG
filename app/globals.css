@@ -50,9 +50,43 @@ html.light .tech-mesh {
     radial-gradient(ellipse 60% 40% at 100% 30%, rgba(34, 211, 238, 0.06), transparent);
 }
 
+/* 动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+.animate-fade-in-up { animation: fade-in-up 0.5s ease-out both; }
+
 @layer components {
   .card {
-    @apply rounded-2xl border border-[rgb(var(--border))]/80 bg-[rgb(var(--card))]/90 backdrop-blur-md shadow-lg shadow-black/10;
+    @apply rounded-2xl border border-[rgb(var(--border))]/80 bg-[rgb(var(--card))]/90 backdrop-blur-md shadow-lg shadow-black/10 transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-xl shadow-black/15 border-[rgb(var(--accent))]/30;
+    transform: translateY(-2px);
   }
   .card-tech {
     @apply card relative overflow-hidden;
@@ -61,11 +95,19 @@ html.light .tech-mesh {
     content: "";
     @apply pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgb(var(--accent))]/40 to-transparent;
   }
+  .card-tech::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(var(--accent), 0.06), transparent 40%);
+  }
+  .card-tech:hover::after {
+    @apply opacity-100;
+  }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-md shadow-brand-600/25 hover:shadow-brand-500/40 hover:brightness-110;
+    @apply btn bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-md shadow-brand-600/25 hover:shadow-brand-500/40 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98];
   }
   .btn-ghost {
     @apply btn hover:bg-[rgb(var(--hover))] text-[rgb(var(--fg))];
@@ -77,10 +119,10 @@ html.light .tech-mesh {
     @apply btn bg-[rgb(var(--accent))]/15 text-[rgb(var(--accent))] border border-[rgb(var(--accent))]/30 hover:bg-[rgb(var(--accent))]/25;
   }
   .input {
-    @apply w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))]/80 px-4 py-2.5 text-sm outline-none transition focus:border-[rgb(var(--accent))]/60 focus:ring-2 focus:ring-[rgb(var(--accent))]/20;
+    @apply w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))]/80 px-4 py-2.5 text-sm outline-none transition-all duration-200 focus:border-[rgb(var(--accent))]/60 focus:ring-2 focus:ring-[rgb(var(--accent))]/20 focus:shadow-lg focus:shadow-[rgb(var(--accent))]/5;
   }
   .chip {
-    @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-[rgb(var(--hover))] text-[rgb(var(--muted))];
+    @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-[rgb(var(--hover))] text-[rgb(var(--muted))] transition-colors duration-200;
   }
   .chip-active {
     @apply chip bg-brand-600/20 text-brand-400 border border-brand-500/30;
@@ -96,5 +138,13 @@ html.light .tech-mesh {
   }
   .stat-pill {
     @apply inline-flex items-center gap-1.5 rounded-full border border-[rgb(var(--border))]/60 bg-[rgb(var(--card))]/60 px-3 py-1 text-xs text-[rgb(var(--muted))];
+  }
+  /* 渐变文字 */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-cyan-400 to-brand-600;
+  }
+  /* 玻璃态 */
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
 }

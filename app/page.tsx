@@ -50,33 +50,36 @@ export default async function HomePage({
             const screenshots = safeJSON<string[]>(a.screenshots, []);
             const cover = screenshots[0];
             return (
-              <Link key={a.id} href={`/apps/${a.id}`} className="card overflow-hidden transition hover:border-brand-300 dark:hover:border-brand-700">
-                <div className="aspect-video overflow-hidden bg-gradient-to-br from-brand-500/15 to-brand-800/15">
+              <Link key={a.id} href={`/apps/${a.id}`} className="card-tech group overflow-hidden">
+                <div className="aspect-video overflow-hidden bg-gradient-to-br from-brand-500/10 to-violet-800/10 relative">
                   {cover ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover} alt="" className="h-full w-full object-cover" />
+                    <img src={cover} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : (
-                    <div className="grid h-full place-items-center text-3xl font-bold text-brand-700/40">
-                      {a.name.slice(0, 1)}
+                    <div className="grid h-full place-items-center">
+                      <div className="text-4xl font-bold text-gradient opacity-60">
+                        {a.name.slice(0, 1)}
+                      </div>
                     </div>
                   )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--card))]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     {a.logo ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={a.logo} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+                      <img src={a.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover ring-1 ring-[rgb(var(--border))]/50" />
                     ) : (
-                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700 text-sm font-semibold">{a.name.slice(0, 1)}</div>
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500/20 to-violet-500/20 text-brand-400 text-sm font-bold">{a.name.slice(0, 1)}</div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold text-sm">{a.name}</h3>
+                      <h3 className="truncate font-semibold text-sm group-hover:text-[rgb(var(--accent))] transition-colors">{a.name}</h3>
                       <p className="line-clamp-1 mt-0.5 text-xs text-[rgb(var(--muted))]">{a.summary}</p>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-xs text-[rgb(var(--muted))]">
+                  <div className="mt-3 flex items-center justify-between text-xs text-[rgb(var(--muted))]">
                     <span className="chip">{a.category.name}</span>
-                    <span className={`font-medium ${a.pricingMode === "paid" ? "text-brand-600" : "text-emerald-600"}`}>
+                    <span className={`font-semibold ${a.pricingMode === "paid" ? "text-amber-500" : "text-emerald-500"}`}>
                       {a.pricingMode === "paid" ? formatPrice(a.price) : pricingLabel(a.pricingMode)}
                     </span>
                   </div>
@@ -85,7 +88,7 @@ export default async function HomePage({
             );
           })}
           {hotApps.length === 0 && (
-            <div className="card col-span-full p-8 text-center text-[rgb(var(--muted))]">
+            <div className="card col-span-full p-12 text-center text-[rgb(var(--muted))]">
               还没有应用，<Link href="/post/new?type=app" className="link">发布第一个</Link>
             </div>
           )}
