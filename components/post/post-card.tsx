@@ -70,7 +70,6 @@ export default function PostCard({
   const href = post.type === "app" ? `/apps/${post.id}` : post.type === "service" ? `/services/${post.id}` : `/post/${post.id}`;
   const covers = pickCoverImages(post);
   const hasImages = covers.length > 0;
-  const isMulti = covers.length >= 2;
   const isDiscussion = variant === "discussion";
 
   return (
@@ -82,27 +81,25 @@ export default function PostCard({
       }
     >
       {/* 顶部 meta */}
-      <div className="flex items-center gap-2 px-5 pt-4 text-sm text-[rgb(var(--muted))]">
+      <div className="flex items-center gap-3 px-5 pt-4 text-sm text-[rgb(var(--muted))]">
         <Link href={`/u/${post.author.username}`} className="flex items-center gap-2 hover:text-brand-600">
           {post.author.avatar ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={post.author.avatar} alt="" className="h-6 w-6 rounded-full" />
+            <img src={post.author.avatar} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-[rgb(var(--border))]/50" />
           ) : (
-            <div className="grid h-6 w-6 place-items-center rounded-full bg-brand-100 text-brand-700 text-xs">
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500/20 to-violet-500/20 text-brand-600 text-sm font-bold">
               {post.author.nickname.slice(0, 1)}
             </div>
           )}
-          <span className="font-medium text-[rgb(var(--fg))]">{post.author.nickname}</span>
+          <div>
+            <span className="font-medium text-[rgb(var(--fg))] text-sm">{post.author.nickname}</span>
+            <div className="text-xs text-[rgb(var(--muted))]">{fromNow(post.createdAt)}</div>
+          </div>
         </Link>
-        <span>·</span>
-        <span>{fromNow(post.createdAt)}</span>
         {post.circle && (
-          <>
-            <span>·</span>
-            <Link href={`/circles/${post.circle.slug}`} className="link">
-              {post.circle.name}
-            </Link>
-          </>
+          <Link href={`/circles/${post.circle.slug}`} className="chip text-xs ml-1">
+            {post.circle.name}
+          </Link>
         )}
         <span className="chip ml-auto inline-flex items-center gap-1">
           <TypeIcon type={post.type} /> {typeLabel(post.type)}
@@ -111,30 +108,28 @@ export default function PostCard({
 
       {/* 标题 + 内容 + 图片 */}
       <Link href={href} className="block px-5 pt-3">
-        <h2 className="text-lg font-semibold leading-snug hover:text-brand-600">{post.title}</h2>
-        <p className={`mt-2 text-sm text-[rgb(var(--muted))] ${hasImages ? "line-clamp-2" : "line-clamp-3"}`}>
+        <h2 className="text-base font-semibold leading-snug hover:text-brand-600">{post.title}</h2>
+        <p className={`mt-1.5 text-sm text-[rgb(var(--muted))] ${hasImages ? "line-clamp-2" : "line-clamp-3"}`}>
           {excerpt}
         </p>
       </Link>
 
-      {/* 图片区:有图才渲染。多图用网格,单图大图。 */}
+      {/* 图片区：小缩略图，不占太大空间 */}
       {hasImages && (
-        <Link href={href} className="mt-3 block">
-          {isMulti ? (
-            <div className={`grid gap-1 ${covers.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-              {covers.map((src, i) => (
-                <div key={i} className="aspect-[4/3] overflow-hidden bg-[rgb(var(--hover))]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" className="h-full w-full object-cover transition group-hover:scale-105" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="aspect-[16/9] overflow-hidden bg-[rgb(var(--hover))]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={covers[0]} alt="" className="h-full w-full object-cover" />
-            </div>
-          )}
+        <Link href={href} className="mt-2 block px-5">
+          <div className="flex gap-2 overflow-hidden">
+            {covers.slice(0, 4).map((src, i) => (
+              <div key={i} className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[rgb(var(--hover))]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="" className="h-full w-full object-cover" />
+              </div>
+            ))}
+            {covers.length > 4 && (
+              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-[rgb(var(--hover))] text-xs text-[rgb(var(--muted))]">
+                +{covers.length - 4}
+              </div>
+            )}
+          </div>
         </Link>
       )}
 
