@@ -129,7 +129,25 @@ export async function POST(req: Request) {
   }
 
   const pwd = await bcrypt.hash("demo123", 10);
-  const results = { apps: 0, skills: 0, users: 0 };
+  const results = { apps: 0, skills: 0, users: 0, categories: 0 };
+
+  // 确保分类存在
+  const CATS = [
+    { slug: "image", name: "图像创作", icon: "🎨" },
+    { slug: "video", name: "视频动画", icon: "🎬" },
+    { slug: "audio", name: "音频语音", icon: "🎵" },
+    { slug: "writing", name: "文案写作", icon: "✍️" },
+    { slug: "code", name: "编程开发", icon: "💻" },
+    { slug: "devtool", name: "开发工具", icon: "🔧" },
+    { slug: "edu", name: "教育学习", icon: "📚" },
+    { slug: "office", name: "办公效率", icon: "📊" },
+    { slug: "life", name: "生活助手", icon: "🏠" },
+    { slug: "other", name: "其他", icon: "📦" },
+  ];
+  for (const c of CATS) {
+    await prisma.category.upsert({ where: { slug: c.slug }, update: {}, create: c });
+    results.categories++;
+  }
 
   // 创建用户和应用
   for (const item of APPS_DATA) {
