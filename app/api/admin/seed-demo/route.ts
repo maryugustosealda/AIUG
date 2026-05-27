@@ -113,19 +113,12 @@ const SKILLS_DATA = [
   { email: "demo_dev6@aiug.local", title: "短视频 AI 剪辑", content: "AI 辅助短视频后期制作。\n\n## 服务\n- 自动剪辑（去口头禅/停顿）\n- AI 字幕+翻译\n- 封面图生成\n- 背景音乐匹配\n\n## 交付\n- 成品视频文件\n- 字幕文件\n- 2次免费修改", tags: ["短视频", "剪辑", "后期"], price: 150 },
 ];
 
-export async function POST(req: Request) {
-  // 支持两种认证方式：管理员session 或 secret header
-  const seedSecret = req.headers.get("x-seed-secret");
-  const validSecret = process.env.SEED_SECRET || "aiug-seed-2024-temp";
-  if (seedSecret && seedSecret === validSecret) {
-    // OK, secret matches
-  } else {
-    try {
-      await requireAdmin();
-    } catch (e: any) {
-      if (e?.message === "UNAUTHENTICATED") return NextResponse.json({ error: "请先登录" }, { status: 401 });
-      return NextResponse.json({ error: "仅管理员可执行" }, { status: 403 });
-    }
+export async function POST() {
+  try {
+    await requireAdmin();
+  } catch (e: any) {
+    if (e?.message === "UNAUTHENTICATED") return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    return NextResponse.json({ error: "仅管理员可执行" }, { status: 403 });
   }
 
   const pwd = await bcrypt.hash("demo123", 10);
