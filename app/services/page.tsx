@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { fromNow, safeJSON } from "@/lib/utils";
 import { Briefcase, Clock, Package } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const CATEGORY_LABEL: Record<string, string> = {
   teaching: "教学/课程", consulting: "咨询答疑", customize: "定制开发",

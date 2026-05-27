@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { fromNow, safeJSON, formatPrice, pricingLabel } from "@/lib/utils";
+import { safeJSON, formatPrice, pricingLabel } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function AppsPage({ searchParams }: { searchParams: { cat?: string; pricing?: string; sort?: string } }) {
   const cats = await prisma.category.findMany({ orderBy: { sort: "asc" } });

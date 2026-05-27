@@ -73,17 +73,8 @@ export default function SeedPage() {
               </span>
             )}
           </div>
-          <div>
-            群组:
-            {result.room.created
-              ? `新建「${result.room.name}」`
-              : result.room.renamed
-              ? `已存在,已重命名为「${result.room.name}」`
-              : `已存在「${result.room.name}」(管理员手动建的群组不会被改动)`}
-          </div>
           <div className="pt-2 text-xs text-foreground/60">
-            前往 <a className="underline" href="/circles">圈子列表</a> 或{" "}
-            <a className="underline" href="/chat">群组列表</a> 看看效果。
+            前往 <a className="underline" href="/circles">圈子列表</a> 看看效果。
           </div>
         </div>
       )}

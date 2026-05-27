@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-type Stats = { users: number; apps: number; circles: number; rooms: number };
+type Stats = { users: number; apps: number; circles: number; rooms?: number };
 
 export default function BannerHero({ stats }: { stats: Stats }) {
   return (
@@ -57,8 +57,6 @@ export default function BannerHero({ stats }: { stats: Stats }) {
             <Stat n={stats.users} label="创作者" />
             <span className="h-3 w-px bg-white/20" />
             <Stat n={stats.circles} label="圈子" />
-            <span className="h-3 w-px bg-white/20" />
-            <Stat n={stats.rooms} label="群组" />
           </div>
         </div>
       </div>

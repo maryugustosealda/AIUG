@@ -49,16 +49,29 @@ function pickCoverImages(post: PostInList): string[] {
   return imgs.slice(0, 3);
 }
 
-export default function PostCard({ post }: { post: PostInList }) {
+export default function PostCard({
+  post,
+  variant = "default",
+}: {
+  post: PostInList;
+  variant?: "default" | "discussion";
+}) {
   const tags = safeJSON<string[]>(post.tags, []);
   const excerpt = post.content.replace(/[#*`>\-\[\]\(\)]/g, "").slice(0, 200);
   const href = post.type === "app" ? `/apps/${post.id}` : post.type === "service" ? `/services/${post.id}` : `/post/${post.id}`;
   const covers = pickCoverImages(post);
   const hasImages = covers.length > 0;
   const isMulti = covers.length >= 2;
+  const isDiscussion = variant === "discussion";
 
   return (
-    <article className="card overflow-hidden hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
+    <article
+      className={
+        isDiscussion
+          ? "card-tech overflow-hidden transition hover:border-[rgb(var(--accent))]/30"
+          : "card overflow-hidden hover:border-brand-300 dark:hover:border-brand-700 transition-colors"
+      }
+    >
       {/* 顶部 meta */}
       <div className="flex items-center gap-2 px-5 pt-4 text-sm text-[rgb(var(--muted))]">
         <Link href={`/u/${post.author.username}`} className="flex items-center gap-2 hover:text-brand-600">

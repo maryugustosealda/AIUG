@@ -23,6 +23,7 @@ export async function GET(req: Request) {
   const take = Math.min(Math.max(takeRaw || 20, 1), 50);
   const circleSlug = url.searchParams.get("circle");
   const tag = url.searchParams.get("tag") || undefined;
+  const type = url.searchParams.get("type") || undefined;
 
   let circleId: string | undefined;
   if (circleSlug) {
@@ -47,13 +48,14 @@ export async function GET(req: Request) {
         where: {
           status: "published",
           ...(circleId ? { circleId } : {}),
+          ...(type ? { type } : {}),
           createdAt: { gte: idx.createdAt },
         },
       });
     }
   }
 
-  const feed = await getFeed({ sort, circleId, tag, take: take + 1, skip });
+  const feed = await getFeed({ sort, type, circleId, tag, take: take + 1, skip });
   const hasMore = feed.length > take;
   const items = feed.slice(0, take).map(formatPost);
   const nextCursor = hasMore ? feed[take - 1].id : null;
@@ -82,6 +84,12 @@ function formatPost(p: any) {
           screenshots: parseJsonArray(p.app.screenshots),
         }
       : null,
+    service: p.service
+      ? {
+          summary: p.service.summary || null,
+          packages: parseJsonPackages(p.service.packages),
+        }
+      : null,
     circle: p.circle ? { id: p.circle.slug, name: p.circle.name } : null,
     likeCount: p.likeCount ?? 0,
     commentCount: p.commentCount ?? 0,
@@ -91,6 +99,17 @@ function formatPost(p: any) {
 }
 
 function parseJsonArray(raw: any): string[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== "string" || !raw) return [];
+  try {
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseJsonPackages(raw: any): Array<{ name: string; price: number; deliveryDays?: number }> {
   if (Array.isArray(raw)) return raw;
   if (typeof raw !== "string" || !raw) return [];
   try {

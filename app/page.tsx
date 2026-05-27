@@ -4,9 +4,10 @@ import { getFeed } from "@/lib/feed";
 import PostCard from "@/components/post/post-card";
 import BannerHero from "@/components/banner-hero";
 import BadgeIcon from "@/components/badge-icon";
-import { TrendingUp, Clock, Hash } from "lucide-react";
+import { TrendingUp, Clock, Hash, ArrowRight } from "lucide-react";
+import { safeJSON, formatPrice, pricingLabel } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // ISR: 每60秒重新生成
 
 export default async function HomePage({
   searchParams,
@@ -14,96 +15,134 @@ export default async function HomePage({
   searchParams: { sort?: string };
 }) {
   const sort = (searchParams.sort === "hot" ? "hot" : "latest") as "latest" | "hot";
-  const [posts, hotCircles, hotTags, userCount, appCount, circleCount, roomCount] = await Promise.all([
-    getFeed({ sort, take: 20 }),
+  const [posts, hotCircles, hotApps, userCount, appCount, circleCount] = await Promise.all([
+    getFeed({ sort, take: 10 }),
     prisma.circle.findMany({ orderBy: { postCount: "desc" }, take: 6 }),
-    prisma.post.findMany({
-      where: { status: "published", tags: { not: null } },
-      select: { tags: true },
-      take: 200,
-      orderBy: { createdAt: "desc" },
+    prisma.app.findMany({
+      orderBy: { downloadCount: "desc" },
+      take: 6,
+      include: {
+        category: true,
+        post: { select: { id: true, title: true, author: { select: { nickname: true } } } },
+      },
     }),
     prisma.user.count(),
     prisma.app.count(),
     prisma.circle.count(),
-    prisma.chatRoom.count(),
   ]);
 
-  const tagCount: Record<string, number> = {};
-  for (const p of hotTags) {
-    try {
-      (JSON.parse(p.tags || "[]") as string[]).forEach(
-        (t) => (tagCount[t] = (tagCount[t] || 0) + 1)
-      );
-    } catch {}
-  }
-  const topTags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 12);
-
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_280px]">
-      <div>
-        <BannerHero
-          stats={{ users: userCount, apps: appCount, circles: circleCount, rooms: roomCount }}
-        />
+    <div className="space-y-6">
+      <BannerHero
+        stats={{ users: userCount, apps: appCount, circles: circleCount, rooms: 0 }}
+      />
 
-        <div className="mb-4 flex items-center gap-2">
-          <Link href="/?sort=latest" className={`btn-ghost ${sort === "latest" ? "bg-[rgb(var(--hover))]" : ""}`}>
-            <Clock className="h-4 w-4" /> 最新
-          </Link>
-          <Link href="/?sort=hot" className={`btn-ghost ${sort === "hot" ? "bg-[rgb(var(--hover))]" : ""}`}>
-            <TrendingUp className="h-4 w-4" /> 热门
+      {/* 热门应用 */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold">热门应用</h2>
+          <Link href="/apps" className="text-sm link flex items-center gap-1">
+            全部应用 <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-
-        <div className="space-y-4">
-          {posts.length === 0 ? (
-            <div className="card p-12 text-center text-[rgb(var(--muted))]">
-              还没有人发布内容,
-              <Link href="/post/new" className="link">来当第一个</Link> 吧
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {hotApps.map((a) => {
+            const screenshots = safeJSON<string[]>(a.screenshots, []);
+            const cover = screenshots[0];
+            return (
+              <Link key={a.id} href={`/apps/${a.id}`} className="card overflow-hidden transition hover:border-brand-300 dark:hover:border-brand-700">
+                <div className="aspect-video overflow-hidden bg-gradient-to-br from-brand-500/15 to-brand-800/15">
+                  {cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cover} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="grid h-full place-items-center text-3xl font-bold text-brand-700/40">
+                      {a.name.slice(0, 1)}
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    {a.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={a.logo} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+                    ) : (
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700 text-sm font-semibold">{a.name.slice(0, 1)}</div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-semibold text-sm">{a.name}</h3>
+                      <p className="line-clamp-1 mt-0.5 text-xs text-[rgb(var(--muted))]">{a.summary}</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-xs text-[rgb(var(--muted))]">
+                    <span className="chip">{a.category.name}</span>
+                    <span className={`font-medium ${a.pricingMode === "paid" ? "text-brand-600" : "text-emerald-600"}`}>
+                      {a.pricingMode === "paid" ? formatPrice(a.price) : pricingLabel(a.pricingMode)}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+          {hotApps.length === 0 && (
+            <div className="card col-span-full p-8 text-center text-[rgb(var(--muted))]">
+              还没有应用，<Link href="/post/new?type=app" className="link">发布第一个</Link>
             </div>
-          ) : (
-            posts.map((p) => <PostCard key={p.id} post={p as any} />)
           )}
         </div>
-      </div>
+      </section>
 
-      <aside className="space-y-4">
-        <div className="card p-4">
-          <h3 className="mb-3 font-semibold">热门圈子</h3>
-          <ul className="space-y-2 text-sm">
-            {hotCircles.map((c) => (
-              <li key={c.id}>
-                <Link href={`/circles/${c.slug}`} className="flex items-center gap-2 hover:text-brand-600">
-                  <BadgeIcon raw={c.icon} seed={c.slug} size="xs" />
-                  <span className="flex-1 truncate">{c.name}</span>
-                  <span className="text-xs text-[rgb(var(--muted))]">{c.postCount}</span>
-                </Link>
-              </li>
-            ))}
-            {hotCircles.length === 0 && <li className="text-[rgb(var(--muted))] text-xs">暂无</li>}
-          </ul>
-          <Link href="/circles" className="mt-3 inline-block text-xs link">查看全部 →</Link>
-        </div>
-
-        <div className="card p-4">
-          <h3 className="mb-3 flex items-center gap-1 font-semibold">
-            <Hash className="h-4 w-4" /> 热门标签
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {topTags.map(([t, n]) => (
-              <Link key={t} href={`/search?tag=${encodeURIComponent(t)}`} className="chip hover:bg-brand-100 dark:hover:bg-brand-900/40">
-                {t} <span className="ml-1 text-[rgb(var(--muted))]">{n}</span>
+      {/* 最新动态 */}
+      <section className="grid gap-6 md:grid-cols-[1fr_280px]">
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-bold">最新动态</h2>
+            <div className="ml-4 flex items-center gap-2">
+              <Link href="/?sort=latest" className={`btn-ghost text-sm ${sort === "latest" ? "bg-[rgb(var(--hover))]" : ""}`}>
+                <Clock className="h-4 w-4" /> 最新
               </Link>
-            ))}
-            {topTags.length === 0 && <span className="text-[rgb(var(--muted))] text-xs">暂无</span>}
+              <Link href="/?sort=hot" className={`btn-ghost text-sm ${sort === "hot" ? "bg-[rgb(var(--hover))]" : ""}`}>
+                <TrendingUp className="h-4 w-4" /> 热门
+              </Link>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {posts.length === 0 ? (
+              <div className="card p-12 text-center text-[rgb(var(--muted))]">
+                还没有人发布内容,
+                <Link href="/post/new" className="link">来当第一个</Link> 吧
+              </div>
+            ) : (
+              posts.map((p) => <PostCard key={p.id} post={p as any} />)
+            )}
           </div>
         </div>
 
-        <div className="card p-4 text-xs text-[rgb(var(--muted))]">
-          <p className="mb-1 font-medium text-[rgb(var(--fg))]">关于 AIUG</p>
-          <p>AI 创作者聚集地。下载链接由创作者提供,平台仅作信息聚合与审核。</p>
-        </div>
-      </aside>
+        <aside className="space-y-4">
+          <div className="card p-4">
+            <h3 className="mb-3 font-semibold">热门圈子</h3>
+            <ul className="space-y-2 text-sm">
+              {hotCircles.map((c) => (
+                <li key={c.id}>
+                  <Link href={`/circles/${c.slug}`} className="flex items-center gap-2 hover:text-brand-600">
+                    <BadgeIcon raw={c.icon} seed={c.slug} size="xs" />
+                    <span className="flex-1 truncate">{c.name}</span>
+                    <span className="text-xs text-[rgb(var(--muted))]">{c.postCount}</span>
+                  </Link>
+                </li>
+              ))}
+              {hotCircles.length === 0 && <li className="text-[rgb(var(--muted))] text-xs">暂无</li>}
+            </ul>
+            <Link href="/circles" className="mt-3 inline-block text-xs link">查看全部 →</Link>
+          </div>
+
+          <div className="card p-4 text-xs text-[rgb(var(--muted))]">
+            <p className="mb-1 font-medium text-[rgb(var(--fg))]">关于 AIUG</p>
+            <p>AI 创作者聚集地。下载链接由创作者提供,平台仅作信息聚合与审核。</p>
+          </div>
+        </aside>
+      </section>
     </div>
   );
 }

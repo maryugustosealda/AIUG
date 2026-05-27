@@ -3,64 +3,98 @@
 @tailwind utilities;
 
 :root {
-  --bg: 250 250 252;
-  --fg: 17 24 39;
-  --muted: 107 114 128;
+  --bg: 6 8 18;
+  --fg: 241 245 249;
+  --muted: 148 163 184;
+  --card: 15 18 32;
+  --border: 51 65 85;
+  --hover: 30 41 59;
+  --accent: 34 211 238;
+  --accent-dim: 6 182 212;
+  --glow: 99 102 241;
+}
+
+html.light {
+  --bg: 248 250 252;
+  --fg: 15 23 42;
+  --muted: 100 116 139;
   --card: 255 255 255;
-  --border: 229 231 235;
-  --hover: 243 244 246;
+  --border: 226 232 240;
+  --hover: 241 245 249;
+  --accent: 8 145 178;
+  --accent-dim: 14 116 144;
+  --glow: 79 70 229;
 }
 
-.dark {
-  --bg: 13 14 20;
-  --fg: 229 231 235;
-  --muted: 156 163 175;
-  --card: 22 24 32;
-  --border: 39 41 50;
-  --hover: 30 32 42;
-}
-
-html, body {
+html,
+body {
   background-color: rgb(var(--bg));
   color: rgb(var(--fg));
 }
 
+/* 科技感页面底纹 */
+.tech-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.18), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(34, 211, 238, 0.08), transparent),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(139, 92, 246, 0.1), transparent);
+}
+
+html.light .tech-mesh {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.12), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 30%, rgba(34, 211, 238, 0.06), transparent);
+}
+
 @layer components {
   .card {
-    @apply rounded-xl border bg-[rgb(var(--card))] border-[rgb(var(--border))];
+    @apply rounded-2xl border border-[rgb(var(--border))]/80 bg-[rgb(var(--card))]/90 backdrop-blur-md shadow-lg shadow-black/10;
+  }
+  .card-tech {
+    @apply card relative overflow-hidden;
+  }
+  .card-tech::before {
+    content: "";
+    @apply pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgb(var(--accent))]/40 to-transparent;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-700;
+    @apply btn bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-md shadow-brand-600/25 hover:shadow-brand-500/40 hover:brightness-110;
   }
   .btn-ghost {
     @apply btn hover:bg-[rgb(var(--hover))] text-[rgb(var(--fg))];
   }
   .btn-outline {
-    @apply btn border border-[rgb(var(--border))] hover:bg-[rgb(var(--hover))];
+    @apply btn border border-[rgb(var(--border))] hover:border-[rgb(var(--accent))]/50 hover:bg-[rgb(var(--hover))];
+  }
+  .btn-accent {
+    @apply btn bg-[rgb(var(--accent))]/15 text-[rgb(var(--accent))] border border-[rgb(var(--accent))]/30 hover:bg-[rgb(var(--accent))]/25;
   }
   .input {
-    @apply w-full rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20;
-  }
-  .label {
-    @apply mb-1 block text-sm font-medium text-[rgb(var(--fg))];
+    @apply w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))]/80 px-4 py-2.5 text-sm outline-none transition focus:border-[rgb(var(--accent))]/60 focus:ring-2 focus:ring-[rgb(var(--accent))]/20;
   }
   .chip {
-    @apply inline-flex items-center rounded-full bg-[rgb(var(--hover))] px-2.5 py-0.5 text-xs text-[rgb(var(--muted))];
+    @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-[rgb(var(--hover))] text-[rgb(var(--muted))];
+  }
+  .chip-active {
+    @apply chip bg-brand-600/20 text-brand-400 border border-brand-500/30;
   }
   .link {
-    @apply text-brand-600 hover:underline;
+    @apply text-[rgb(var(--accent))] hover:underline underline-offset-2;
+  }
+  .page-title {
+    @apply text-2xl font-bold tracking-tight md:text-3xl;
+  }
+  .page-sub {
+    @apply mt-2 text-sm text-[rgb(var(--muted))] max-w-xl leading-relaxed;
+  }
+  .stat-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-[rgb(var(--border))]/60 bg-[rgb(var(--card))]/60 px-3 py-1 text-xs text-[rgb(var(--muted))];
   }
 }
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: rgb(var(--border));
-  border-radius: 4px;
-}
-
