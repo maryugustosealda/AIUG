@@ -64,6 +64,11 @@ export async function getFeed(opts: {
       service: {
         select: { summary: true, packages: true },
       },
+      comments: {
+        select: { id: true, content: true, createdAt: true, author: { select: { nickname: true, avatar: true } } },
+        orderBy: { createdAt: "desc" as const },
+        take: 3,
+      },
     },
   });
 

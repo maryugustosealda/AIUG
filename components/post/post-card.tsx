@@ -2,6 +2,14 @@ import Link from "next/link";
 import { Heart, MessageSquare, Eye, Package, FileText, HelpCircle, Bookmark, Briefcase } from "lucide-react";
 import { fromNow, safeJSON } from "@/lib/utils";
 import LikeButton from "./like-button";
+import CommentPreview from "./comment-preview";
+
+type PostComment = {
+  id: string;
+  content: string;
+  createdAt: string | Date;
+  author: { nickname: string; avatar: string | null };
+};
 
 type PostInList = {
   id: string;
@@ -18,6 +26,7 @@ type PostInList = {
   author: { id: string; username: string; nickname: string; avatar: string | null };
   circle: { slug: string; name: string } | null;
   app: { id: string; logo: string | null; screenshots?: string | null; pricingMode: string; price: number } | null;
+  comments?: PostComment[];
   liked?: boolean;
 };
 
@@ -151,8 +160,19 @@ export default function PostCard({
           </span>
         </div>
       </div>
+
+      {/* 评论预览 + 快速评论 */}
+      <CommentPreview
+        postId={post.id}
+        comments={(post.comments || []).map((c) => ({
+          id: c.id,
+          content: c.content,
+          createdAt: typeof c.createdAt === "string" ? c.createdAt : (c.createdAt as Date).toISOString(),
+          author: c.author,
+        })).reverse()}
+        total={post.commentCount}
+        href={href}
+      />
     </article>
   );
 }
-
-

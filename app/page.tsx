@@ -4,7 +4,7 @@ import { getFeed } from "@/lib/feed";
 import PostCard from "@/components/post/post-card";
 import BannerHero from "@/components/banner-hero";
 import { TrendingUp, Clock, ArrowRight } from "lucide-react";
-import { safeJSON, formatPrice, pricingLabel } from "@/lib/utils";
+import { formatPrice, pricingLabel } from "@/lib/utils";
 
 export const revalidate = 60; // ISR: 每60秒重新生成
 
@@ -42,50 +42,31 @@ export default async function HomePage({
             全部应用 <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {hotApps.map((a) => {
-            const screenshots = safeJSON<string[]>(a.screenshots, []);
-            const cover = screenshots[0];
-            return (
-              <Link key={a.id} href={`/apps/${a.id}`} className="card-tech group overflow-hidden">
-                <div className="aspect-video overflow-hidden bg-gradient-to-br from-brand-500/10 to-violet-800/10 relative">
-                  {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  ) : (
-                    <div className="grid h-full place-items-center">
-                      <div className="text-4xl font-bold text-gradient opacity-60">
-                        {a.name.slice(0, 1)}
-                      </div>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--card))]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {hotApps.map((a) => (
+            <Link key={a.id} href={`/apps/${a.id}`} className="card-tech group flex items-center gap-3 p-3.5">
+              {a.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={a.logo} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover ring-1 ring-[rgb(var(--border))]/50" />
+              ) : (
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500/20 to-violet-500/20 text-brand-400 text-base font-bold">
+                  {a.name.slice(0, 1)}
                 </div>
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    {a.logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={a.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover ring-1 ring-[rgb(var(--border))]/50" />
-                    ) : (
-                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500/20 to-violet-500/20 text-brand-400 text-sm font-bold">{a.name.slice(0, 1)}</div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold text-sm group-hover:text-[rgb(var(--accent))] transition-colors">{a.name}</h3>
-                      <p className="line-clamp-1 mt-0.5 text-xs text-[rgb(var(--muted))]">{a.summary}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-xs text-[rgb(var(--muted))]">
-                    <span className="chip">{a.category.name}</span>
-                    <span className={`font-semibold ${a.pricingMode === "paid" ? "text-amber-500" : "text-emerald-500"}`}>
-                      {a.pricingMode === "paid" ? formatPrice(a.price) : pricingLabel(a.pricingMode)}
-                    </span>
-                  </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-sm font-semibold group-hover:text-[rgb(var(--accent))] transition-colors">{a.name}</h3>
+                <p className="line-clamp-1 mt-0.5 text-xs text-[rgb(var(--muted))]">{a.summary}</p>
+                <div className="mt-1 flex items-center gap-2 text-xs text-[rgb(var(--muted))]">
+                  <span className="chip text-[10px] px-1.5 py-0.5">{a.category.name}</span>
+                  <span className={`font-medium ${a.pricingMode === "paid" ? "text-amber-500" : "text-emerald-500"}`}>
+                    {a.pricingMode === "paid" ? formatPrice(a.price) : pricingLabel(a.pricingMode)}
+                  </span>
                 </div>
-              </Link>
-            );
-          })}
+              </div>
+            </Link>
+          ))}
           {hotApps.length === 0 && (
-            <div className="card col-span-full p-12 text-center text-[rgb(var(--muted))]">
+            <div className="card col-span-full p-10 text-center text-[rgb(var(--muted))]">
               还没有应用，<Link href="/post/new?type=app" className="link">发布第一个</Link>
             </div>
           )}
