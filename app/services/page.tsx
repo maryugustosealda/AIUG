@@ -46,14 +46,18 @@ export default async function ServicesPage({
 
   return (
     <div className="space-y-6">
-      <div className="card p-6">
+      <div className="card-tech p-6">
         <div className="flex items-center gap-2">
-          <Briefcase className="h-6 w-6 text-brand-600" />
-          <h1 className="text-2xl font-bold">技能市场</h1>
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-amber-500/20 to-brand-500/20">
+            <Briefcase className="h-5 w-5 text-[rgb(var(--accent))]" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">技能市场</h1>
+            <p className="text-xs text-[rgb(var(--muted))]">
+              找人帮你 AI 出片、做视频、训练模型，或者上架你自己的技能
+            </p>
+          </div>
         </div>
-        <p className="mt-1 text-sm text-[rgb(var(--muted))]">
-          找人帮你 AI 出片、做视频、训练模型,或者上架你自己的技能。
-        </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {CATEGORIES.map((c) => (
             <Link key={c.v} href={c.v ? `/services?cat=${c.v}` : "/services"}
@@ -81,7 +85,7 @@ export default async function ServicesPage({
             const minPrice = pkgs.reduce((m, p) => (p.price > 0 && (m === 0 || p.price < m) ? p.price : m), 0);
             return (
               <Link key={s.id} href={`/services/${s.post.id}`}
-                className="card overflow-hidden transition hover:border-brand-300 dark:hover:border-brand-700">
+                className="card-tech group overflow-hidden">
                 <div className="aspect-video overflow-hidden bg-gradient-to-br from-brand-500/15 to-brand-800/15">
                   {cover ? (
                     // eslint-disable-next-line @next/next/no-img-element

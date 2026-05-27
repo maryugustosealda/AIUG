@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import Markdown from "@/components/markdown";
 import CommentSection from "@/components/post/comment-section";
 import LikeButton from "@/components/post/like-button";
+import FavoriteButton from "@/components/post/favorite-button";
 import FollowButton from "@/components/user/follow-button";
 import UnlockBox from "@/components/app/unlock-box";
 import Screenshots from "@/components/app/screenshots";
@@ -50,6 +51,9 @@ export default async function AppPage({ params }: { params: { id: string } }) {
 
   const liked = session?.user
     ? !!(await prisma.like.findUnique({ where: { userId_postId: { userId: session.user.id, postId: post.id } } }))
+    : false;
+  const favorited = session?.user
+    ? !!(await prisma.favorite.findUnique({ where: { userId_postId: { userId: session.user.id, postId: post.id } } }))
     : false;
   const isFollowing = session?.user && session.user.id !== post.authorId
     ? !!(await prisma.follow.findUnique({ where: { followerId_followingId: { followerId: session.user.id, followingId: post.authorId } } }))
@@ -144,6 +148,7 @@ export default async function AppPage({ params }: { params: { id: string } }) {
         )}
         <div className="mt-6 flex items-center gap-4 border-t border-[rgb(var(--border))] pt-4 text-sm text-[rgb(var(--muted))]">
           <LikeButton postId={post.id} initial={post.likeCount} liked={liked} size="md" />
+          <FavoriteButton postId={post.id} initial={favorited} size="md" />
           <span>· {post.viewCount} 次浏览</span>
         </div>
       </div>
