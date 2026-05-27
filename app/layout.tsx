@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import Providers from "./providers";
 import Header from "@/components/layout/header";
 import BottomNav from "@/components/layout/bottom-nav";
+import RouteProgress from "@/components/route-progress";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-screen antialiased">
         <Providers>
+          <RouteProgress />
           <Header />
           <main className="mx-auto w-full max-w-6xl px-4 py-6 pb-24 md:pb-6">{children}</main>
           <BottomNav />
