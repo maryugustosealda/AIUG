@@ -135,16 +135,12 @@ const COMMUNITY_POSTS = [
   { email: "demo_dev6@aiug.local", title: "Sora 生成的视频效果对比", content: "拿到了 Sora 的测试资格，和 Runway Gen-3、Pika 做了个对比。\n\n## 测试 Prompt\n\"A cat walking on a beach at sunset, cinematic, 4K\"\n\n## 结论\n- Sora: 画质最好，运动最自然，但生成慢\n- Runway: 速度快，质量中等\n- Pika: 最快，但画质一般\n\n详细对比视频在下面，大家觉得哪个效果最好？", images: ["https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600", "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600"], tags: ["Sora", "视频生成", "对比"], likeCount: 278, viewCount: 4200 },
 ];
 
-export async function POST(req: Request) {
-  // 临时: 支持 secret header 认证
-  const seedSecret = req.headers.get("x-seed-secret");
-  if (seedSecret !== "aiug-seed-2024-temp") {
-    try {
-      await requireAdmin();
-    } catch (e: any) {
-      if (e?.message === "UNAUTHENTICATED") return NextResponse.json({ error: "请先登录" }, { status: 401 });
-      return NextResponse.json({ error: "仅管理员可执行" }, { status: 403 });
-    }
+export async function POST() {
+  try {
+    await requireAdmin();
+  } catch (e: any) {
+    if (e?.message === "UNAUTHENTICATED") return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    return NextResponse.json({ error: "仅管理员可执行" }, { status: 403 });
   }
 
   const pwd = await bcrypt.hash("demo123", 10);
